@@ -126,6 +126,9 @@ elseif(isset($_GET['newTask']))
 		jsonExit($t);
 	}
 	if(Config::get('autotag')) $tags .= ','._post('tag');
+    
+	if ($tags == '' || $tags == ',') $tags = 'untaged';	
+	
 	$ow = 1 + (int)$db->sq("SELECT MAX(ow) FROM {$db->prefix}todolist WHERE list_id=$listId AND compl=0");
 	$db->ex("BEGIN");
 	$db->dq("INSERT INTO {$db->prefix}todolist (uuid,list_id,title,d_created,d_edited,ow,prio) VALUES (?,?,?,?,?,?,?)",
@@ -163,6 +166,9 @@ elseif(isset($_GET['fullNewTask']))
 	}
 	$tags = trim(_post('tags'));
 	if(Config::get('autotag')) $tags .= ','._post('tag');
+	
+	if ($tags == '' || $tags == ',') $tags = 'untaged';	
+	
 	$ow = 1 + (int)$db->sq("SELECT MAX(ow) FROM {$db->prefix}todolist WHERE list_id=$listId AND compl=0");
 	$db->ex("BEGIN");
 	$db->dq("INSERT INTO {$db->prefix}todolist (uuid,list_id,title,d_created,d_edited,ow,prio,note,duedate) VALUES(?,?,?,?,?,?,?,?,?)",

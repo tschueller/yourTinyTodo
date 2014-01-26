@@ -34,6 +34,8 @@ var tabLists = {
 var curList = 0;
 var tagsList = [];
 
+var taskLoadedTimeout = null;
+
 var mytinytodo = window.mytinytodo = _mtt = {
 
 	theme: {
@@ -484,6 +486,9 @@ var mytinytodo = window.mytinytodo = _mtt = {
 		this.addAction('listSelected', slmenuOnListSelected);
 		this.addAction('listHidden', slmenuOnListHidden);
 
+		// Reload
+		$("#reloadPage").click(reloadPage);
+		
 		return this;
 	},
 
@@ -743,6 +748,9 @@ function renameCurList()
 
 function deleteCurList()
 {
+	// Comment out the next line if you realy want to delete a list; tsc,23.07.2011
+	alert('Disable this alert in mytinitodo.js, line746 to enable the list delete function'); return;
+	
 	if(!curList) return false;
 	var r = confirm(_mtt.lang.get('deleteList'));
 	if(!r) return;
@@ -770,6 +778,26 @@ function publishCurList()
 	});
 };
 
+// Added page reload timeout; tsc, 31.12.2011
+function setReloadPageTimeout()
+{
+	// ReloadTimeOut in hours:
+	var reloadtimeout = 3;
+	
+	if (taskLoadedTimeout) clearTimeout(taskLoadedTimeout);
+	taskLoadedTimeout = setTimeout(function()
+	{
+		if (confirm("The last pageload is over " + reloadtimeout + " hours ago. Reload tasks now?")) 
+		{
+			reloadPage();
+		}
+		else
+		{	
+			setReloadPageTimeout();
+		}
+		return false;
+	}, reloadtimeout * 1000 * 60 * 60);
+}
 
 function loadTasks(opts)
 {
@@ -781,6 +809,9 @@ function loadTasks(opts)
 		$('#total').html('0');
 	}
 
+	// set taskloaded timeout **
+	setReloadPageTimeout();
+	
 	_mtt.db.request('loadTasks', {
 		list: curList.id,
 		compl: curList.showCompl,
@@ -1281,7 +1312,7 @@ function editTask(id)
 	$('#taskedit-date .date-created>span').text(item.date);
 	if(item.compl) $('#taskedit-date .date-completed').show().find('span').text(item.dateCompleted);
 	else $('#taskedit-date .date-completed').hide();
-	toggleEditAllTags(0);
+	toggleEditAllTags(1);
 	showEditForm();
 	return false;
 };
@@ -1295,7 +1326,7 @@ function clearEditForm()
 	form.duedate.value = '';
 	form.prio.value = '0';
 	form.id.value = '';
-	toggleEditAllTags(0);
+	toggleEditAllTags(1);
 };
 
 function showEditForm(isAdd)
@@ -1655,9 +1686,24 @@ function mttMenu(container, options)
 		var x2 = $(window).width() + $(document).scrollLeft() - this.$container.outerWidth(true) - 1;
 		var x = offset.left < x2 ? offset.left : x2;
 		if(x<0) x=0;
-		var y = offset.top+caller.offsetHeight-1;
-		if(y + this.$container.outerHeight(true) > $(window).height() + $(document).scrollTop()) y = offset.top - this.$container.outerHeight();
+
+		
+// original code:
+//		var y = offset.top+caller.offsetHeight-1;
+//		if(y + this.$container.outerHeight(true) > $(window).height() + $(document).scrollTop()) y = offset.top - this.$container.outerHeight();
+//		if(y<0) y=0;
+		
+		// Changed for iphone: use window.pageYOffset for the correct iphone position; tsc, 23.07.2011
+		//var touchDeviceOffset = _mtt.options.touchDevice ? window.pageYOffset : 0;
+
+		// Set back to 0 for android; tsc, 09.06.2012
+		var touchDeviceOffset = 0;
+		
+		var y = offset.top + caller.offsetHeight-1  - touchDeviceOffset;
+		if(y + this.$container.outerHeight(true) > $(window).height() + $(document).scrollTop()) 
+			y = offset.top - touchDeviceOffset - this.$container.outerHeight();
 		if(y<0) y=0;
+		
 		this.$container.css({ position: 'absolute', top: y, left: x, width:this.$container.width() /*, 'min-width': $caller.width()*/ }).show();
 		var menu = this;
 		$(document).bind('mousedown.mttmenuclose', function(e){ menu.close(e) });
@@ -2155,5 +2201,16 @@ function saveSettings(frm)
 		}
 	}, 'json');
 } 
+
+/*
+Reload
+*/
+
+function reloadPage()
+{
+	window.location.reload();
+	return false;
+}
+
 
 })();
