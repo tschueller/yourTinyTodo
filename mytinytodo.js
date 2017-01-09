@@ -848,7 +848,7 @@ function prepareTaskStr(item, noteExp)
 				((curList.showNotes && item.note != '') || noteExp ? ' task-expanded' : '') + prepareTagsClass(item.tags_ids) + '">' +
 		'<div class="task-actions"><a href="#" class="taskactionbtn"></a></div>'+"\n"+
 		'<div class="task-left"><div class="task-toggle"></div>'+
-		'<input type="checkbox" '+(flag.readOnly?'disabled="disabled"':'')+(item.compl?'checked="checked"':'')+'/></div>'+"\n"+
+		'<input type="checkbox" '+(flag.readOnly||!canCheck(item)?'disabled="disabled"':'')+(item.compl?'checked="checked"':'')+'/></div>'+"\n"+
 		'<div class="task-middle"><div class="task-through-right">'+prepareDuedate(item)+
 		'<span class="task-date-completed"><span title="'+item.dateInlineTitle+'">'+item.dateInline+'</span>&#8212;'+
 		'<span title="'+item.dateCompletedInlineTitle+'">'+item.dateCompletedInline+'</span></span></div>'+"\n"+
@@ -891,6 +891,14 @@ function prepareTagsStr(item)
 		a[i] = '<a href="#" class="tag" tag="'+a[i]+'" tagid="'+b[i]+'">'+a[i]+'</a>';
 	}
 	return '<span class="task-tags">'+a.join(', ')+'</span>';
+};
+
+function canCheck(item)
+{
+    if (!item.tags || item.tags == '') return true;
+    if (tabLists.get(item.listId).name == "Regular") return false;
+    var a = item.tags.split(',');
+    return a.indexOf("no-check") === -1;
 };
 
 function prepareTagsClass(ids)
