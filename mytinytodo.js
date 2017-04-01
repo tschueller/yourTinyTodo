@@ -883,14 +883,16 @@ function preparePrio(prio,id)
 
 function prepareTagsStr(item)
 {
-	if(!item.tags || item.tags == '') return '';
-	var a = item.tags.split(',');
-	if(!a.length) return '';
-	var b = item.tags_ids.split(',')
-	for(var i in a) {
-		a[i] = '<a href="#" class="tag" tag="'+a[i]+'" tagid="'+b[i]+'">'+a[i]+'</a>';
-	}
-	return '<span class="task-tags">'+a.join(', ')+'</span>';
+    if(!item.tags || item.tags == '') return '';
+    var a = item.tags.split(',');
+    if(!a.length) return '';
+    var b = item.tags_ids.split(',')
+    var counter = 0;
+    for(var i in a) {
+        a[i] = '<span class="sep counter-' + (counter++) + '" tag="'+a[i]+'">, </span>' + 
+            '<a href="#" class="tag" tag="'+a[i]+'" tagid="'+b[i]+'">'+a[i]+'</a>';
+    }
+    return '<span class="task-tags">'+a.join('')+'</span>';
 };
 
 function canCheck(item)
