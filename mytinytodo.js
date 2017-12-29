@@ -809,7 +809,7 @@ function loadTasks(opts)
     opts = opts || {};
     if(opts.clearTasklist) {
         $('#tasklist').html('');
-        $('#total').html('0');
+        updateTaskCount(0);
     }
 
     // set taskloaded timeout **
@@ -935,7 +935,7 @@ function submitNewTask(form)
 
     _mtt.db.request('newTask', { list:curList.id, title: form.task.value, tag: _mtt.filter.getTags() }, function(json){
         if(!json.total) return;
-        $('#total').text( parseInt($('#total').text()) + 1 );
+		updateTaskCount(parseInt($('#total').text()) + 1);
         taskCnt.total++;
         form.task.value = '';
         var item = json.list[0];
@@ -1118,8 +1118,8 @@ function refreshTaskCnt()
     $('#cnt_past').text(taskCnt.past);
     $('#cnt_today').text(taskCnt.today);
     $('#cnt_soon').text(taskCnt.soon);
-    if(filter.due == '') $('#total').text(taskCnt.total);
-    else if(taskCnt[filter.due] != null) $('#total').text(taskCnt[filter.due]);
+	if(filter.due == '') updateTaskCount(taskCnt.total);
+	else if(taskCnt[filter.due] != null) updateTaskCount(taskCnt[filter.due]);
 };
 
 
@@ -1131,7 +1131,7 @@ function setTaskview(v)
         $('#taskview .btnstr').text(_mtt.lang.get('tasks'));
         $('#tasklist').removeClass('filter-'+filter.due);
         filter.due = '';
-        $('#total').text(taskCnt.total);
+		updateTaskCount(taskCnt.total);
     }
     else if(v=='past' || v=='today' || v=='soon')
     {
@@ -1141,7 +1141,7 @@ function setTaskview(v)
         }
         $('#tasklist').addClass('filter-'+v);
         $('#taskview .btnstr').text(_mtt.lang.get('f_'+v));
-        $('#total').text(taskCnt[v]);
+		updateTaskCount(taskCnt[v], true);
         filter.due = v;
     }
 };
@@ -2232,5 +2232,22 @@ function reloadPage()
     return false;
 }
 
+/**
+ *  Update task count info 
+ */
+function updateTaskCount(count, ignoreCompleted) {
+    count = parseInt(count, 10);
+    console.log(count, filter)
+    $("#total").text(count);
+    if (!ignoreCompleted) {
+        window.setTimeout(function() {
+            var completed = $("#tasklist li.task-completed").size();
+            console.log(count, completed)
+            if (completed) {
+                $("#total").text(count - completed + " / " + completed);
+            }        
+        }, 100);
+    }
+}
 
 })();
