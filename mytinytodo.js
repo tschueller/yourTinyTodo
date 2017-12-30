@@ -2237,12 +2237,10 @@ function reloadPage()
  */
 function updateTaskCount(count, ignoreCompleted) {
     count = parseInt(count, 10);
-    console.log(count, filter)
     $("#total").text(count);
     if (!ignoreCompleted) {
         window.setTimeout(function() {
             var completed = $("#tasklist li.task-completed").size();
-            console.log(count, completed)
             if (completed) {
                 $("#total").text(count - completed + " / " + completed);
             }        
